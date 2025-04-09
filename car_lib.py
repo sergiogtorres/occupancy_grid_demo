@@ -1,11 +1,12 @@
 import numpy as np
 import math
+import perception_utils
 class Car():
 
     NOISE_OFF = 0
     NOISE_ON = 1
     def __init__(self, starting_pos, map_x_range, map_y_range, lidar_rps):
-        self.pos = starting_pos
+        self.pos = np.array(starting_pos)
         self.max_range = 10
         self.lidar_dr = 0.10
         self.lidar_dphi = 2*np.pi/100
@@ -18,6 +19,7 @@ class Car():
 
     def update_state(self, dt):
         self.lidar_bearing += dt*self.lidar_bearing_angular_speed
+        self.lidar_bearing = self.lidar_bearing % (2*np.pi)
     def update_relative_range_bearing(self, map_x_range, map_y_range):
         """
         Helper function to get the relative range and bearing meshgrids
@@ -31,17 +33,10 @@ class Car():
 
         self.ground_truth_map_ran = ground_truth_map_ran
         self.ground_truth_map_bearing = ground_truth_map_bearing
-    @staticmethod
-    def check_within_range_bearing(arr_range, arr_bearing, range_down_up, bearing_down_up, ground_truth_map=None):
-        mask = range_down_up[0] <= arr_range
-        mask *= arr_range <= range_down_up[1]
-        mask *= bearing_down_up[0] <= arr_bearing
-        mask *= arr_bearing <= bearing_down_up[1]
-        if ground_truth_map is not None:
-            mask *= ground_truth_map[mask] # now checking if, in those indices, there is an obstacle in the gt map
-        return mask
 
-    def sense(self, bearing, ground_truth_map, noise = NOISE_OFF):
+
+
+    def sense(self, ground_truth_map, noise = NOISE_OFF):
         """
         Uses the ground truth car position and ground truth obstacle map to generate a measurement.
         TODO: include noisy measurements (introduce measurement into bearing -> measure range -> introduce noise to range.
@@ -57,10 +52,13 @@ class Car():
         # 1. loop through the ray to check if obstacle
         for r in np.linspace(0, self.max_range, num = math.ceil(self.max_range/self.lidar_dr)):
             # TODO: before looping, filter the arrays so I only consider the relevant bearings -> index transformations
-            detections = self.check_within_range_bearing(self.ground_truth_map_ran, self.ground_truth_map_bearing,
-                                            [r-self.lidar_dr/2, r+self.lidar_dr/2],
-                                            [bearing-self.lidar_dphi/2, bearing+self.lidar_dphi/2],
-                                                         ground_truth_map)
+            #range_down_up = [r-self.lidar_dr, r+self.lidar_dr]
+            #bearing_down_up = [self.lidar_bearing-self.lidar_dphi, self.lidar_bearing+self.lidar_dphi]
+            detections, _, _ = \
+                perception_utils.check_within_range_bearing(self.ground_truth_map_ran, self.ground_truth_map_bearing,
+                                                            r, self.lidar_bearing, self.lidar_dr, self.lidar_bearing,
+                                                            ground_truth_map,
+                                                            mode=perception_utils.DETECTION_MODE)
 
             if np.any(detections):
                 break
