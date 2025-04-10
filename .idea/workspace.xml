@@ -126,7 +126,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744214740810</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Fixed mismatches of meters and pixel units&#10; - Only major issues in draw_perception_line() and in Car() class in self.pos usage&#10; - Refactored meter/pixel units for clarity&#10; - Refactored functions out of main.py">
+      <option name="closed" value="true" />
+      <created>1744286843788</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1744286843788</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -141,12 +149,12 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>34</line>
+          <line>41</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>45</line>
+          <line>54</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>

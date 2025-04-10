@@ -30,10 +30,19 @@ if __name__ == '__main__':
     assert norm_difference_ratios < 0.02
     pixels_to_a_meter = (pixels_to_a_meter_x+pixels_to_a_meter_y)/2
 
-    map_x_range_meters = np.linspace(0, max_x_meters, obstacle_map.shape[1])
-    map_y_range_meters = np.linspace(0, max_y_meters, obstacle_map.shape[0])
-    car = car_lib.Car([obstacle_map.shape[1]//2, obstacle_map.shape[0]//2],
-                      map_x_range_meters, map_y_range_meters, lidar_rps, pixels_to_a_meter)
+    map_center_x_px, map_center_y_px = [obstacle_map.shape[1]//2, obstacle_map.shape[0]//2]
+    map_min_x_meters = (0-map_center_x_px)/pixels_to_a_meter
+    map_max_x_meters = (obstacle_map.shape[1]-map_center_x_px)/pixels_to_a_meter
+    map_min_y_meters = (0-map_center_y_px)/pixels_to_a_meter
+    map_max_y_meters = (obstacle_map.shape[0]-map_center_x_px)/pixels_to_a_meter
+
+    map_x_range_meters = np.linspace(map_min_x_meters, map_max_x_meters, obstacle_map.shape[1])
+    map_y_range_meters = np.linspace(map_max_y_meters, map_min_y_meters, obstacle_map.shape[0])
+
+    car = car_lib.Car([map_center_x_px, map_center_y_px],
+                      map_x_range_meters, map_y_range_meters,
+                      lidar_rps, pixels_to_a_meter,
+                      map_center_x_px, map_center_y_px)
     running = True
     l_0 = logit(0.5)
     l_t = l_prev = np.full(obstacle_map.shape, l_0)
@@ -67,6 +76,11 @@ if __name__ == '__main__':
         if cv2.waitKey(1) & 0xFF == ord('q'):  # Waits 1ms, breaks on 'q' key
             break
         car.update_state(dt) # for now, only rotates the lidar bearing
+
+        ranges = car.ground_truth_map_ran
+        bearings = car.ground_truth_map_bearing
+        ground_truth_map_xx_yy_meters = car.ground_truth_map_xx_yy_meters
+        delta = car.delta
 
         ###### after everything else is finished, calculate required sleep time ######
         dt = time.time() - start_time

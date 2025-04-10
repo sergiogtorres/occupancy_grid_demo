@@ -9,6 +9,7 @@ INVERSE_MEASUREMENT_MODE = 1
 def draw_perception_line(im, start, range, bearing, dphi, dr, pixels_to_a_meter):
     """
     TODO: adjust to detected range?
+    TODO: check correct usage of (x, y) and not (y, x)
     :param im:
     :param start:
     :param range:
@@ -19,11 +20,13 @@ def draw_perception_line(im, start, range, bearing, dphi, dr, pixels_to_a_meter)
     range_in_pixels = range*pixels_to_a_meter
     dr_in_pixels = dr*pixels_to_a_meter
     pt1 = tuple(start)
-    delta_a = range_in_pixels*np.array([np.cos(bearing+dphi), np.sin(bearing+dphi)])
-    delta_b = range_in_pixels*np.array([np.cos(bearing-dphi), np.sin(bearing-dphi)])
+    bear_plus = -(bearing+dphi)  # negative sign to correct for computer vision convention of y positive downwards
+    bear_minus = -(bearing-dphi)
+    delta_a = range_in_pixels*np.array([np.cos(bear_plus), np.sin(bear_plus)])
+    delta_b = range_in_pixels*np.array([np.cos(bear_minus), np.sin(bear_minus)])
 
-    delta_a_3 = dr_in_pixels*np.array([np.cos(bearing+dphi), np.sin(bearing+dphi)])
-    delta_b_3 = dr_in_pixels*np.array([np.cos(bearing-dphi), np.sin(bearing-dphi)])
+    delta_a_3 = dr_in_pixels*np.array([np.cos(bear_plus), np.sin(bear_plus)])
+    delta_b_3 = dr_in_pixels*np.array([np.cos(bear_minus), np.sin(bear_minus)])
 
     x2_a, y2_a = (start + delta_a).astype(np.uint32)
     x2_b, y2_b = (start + delta_b).astype(np.uint32)

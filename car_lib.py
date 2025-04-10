@@ -5,14 +5,19 @@ class Car():
 
     NOISE_OFF = 0
     NOISE_ON = 1
-    def __init__(self, starting_pos, map_x_range, map_y_range, lidar_rps, pixels_to_a_meter):
-        self.pos_px = np.array(starting_pos)
+    def __init__(self, starting_pos, map_x_range, map_y_range, lidar_rps, pixels_to_a_meter, map_center_x_px, map_center_y_px):
+        self.pos_px = np.array(starting_pos) #position of the car, in [x, y] format, in px
         self.max_range = 10
         self.lidar_dr = 0.10
         self.lidar_dphi = 2*np.pi/100
         self.lidar_bearing = 0
         self.lidar_bearing_angular_speed = lidar_rps*2*np.pi
         self.pixels_to_a_meter = pixels_to_a_meter
+
+        self.map_center_x_px = map_center_x_px
+        self.map_center_y_px = map_center_y_px
+        self.map_center_coords_px = np.array([self.map_center_x_px, self.map_center_y_px])
+        self.neg_y = np.array([0, -1])
 
         ground_truth_map_xx_meters, ground_truth_map_yy_meters = np.meshgrid(map_x_range, map_y_range)
         self.ground_truth_map_xx_yy_meters = np.dstack([ground_truth_map_xx_meters, ground_truth_map_yy_meters])
@@ -21,7 +26,8 @@ class Car():
         self.update_relative_range_bearing(map_x_range, map_y_range)
         self.delta = None
 
-
+    def get_world_pos(self):
+        return (self.pos_px - self.map_center_coords_px) * self.neg_y / self.pixels_to_a_meter
     def update_state(self, dt):
         self.lidar_bearing += dt*self.lidar_bearing_angular_speed
         self.lidar_bearing = self.lidar_bearing % (2*np.pi)
@@ -30,7 +36,8 @@ class Car():
         Helper function to get the relative range and bearing meshgrids
         :return:
         """
-        self.delta = self.ground_truth_map_xx_yy_meters - self.pos_px / self.pixels_to_a_meter
+        pos_meters = self.get_world_pos()
+        self.delta = self.ground_truth_map_xx_yy_meters - pos_meters / self.pixels_to_a_meter
         ground_truth_map_ran = np.linalg.norm(self.delta, axis = 2)
         ground_truth_map_bearing = np.atan2(self.delta[:,:,1], self.delta[:,:,0])
 
