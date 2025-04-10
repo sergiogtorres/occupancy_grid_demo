@@ -8,82 +8,62 @@ import car_lib
 import perception_utils
 
 # TODO: check all instances of use of position -> x, y correct order? cv2 is x, y!
-def draw_perception_line(im, start, range, bearing, dphi):
-    """
-    TODO: adjust to detected range?
-    :param im:
-    :param start:
-    :param range:
-    :param bearing:
-    :param dphi:
-    :return:
-    """
-    pt1 = tuple(start)
-    delta_a = range*np.array([np.cos(bearing+dphi), np.sin(bearing+dphi)])
-    delta_b = range*np.array([np.cos(bearing-dphi), np.sin(bearing-dphi)])
-    x2_a, y2_a = (start + delta_a).astype(np.uint32)
-    x2_b, y2_b = (start + delta_b).astype(np.uint32)
-    pt2_a = x2_a, y2_a
-    pt2_b = x2_b, y2_b
-    #print(f"drawing line from {pt1} to {pt2_a} and {pt2_b}")
-    cv2.line(im, pt1, pt2_a, (0,255,0), 1)
-    cv2.line(im, pt1, pt2_b, (0,255,0), 1)
 
-    cv2.putText(im, f"bearing:{np.round(bearing, 2)}, "
-                    f"range:{np.round(range, 2), }"
-                    f"start:{start}", (50, 30), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (0, 255, 0), 1)
-
-    cv2.putText(im, f"delta_a:{np.round(delta_a, 2)}, ",
-                (50, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-    cv2.putText(im, f"delta_b:{np.round(delta_b, 2)}, ",
-                (50, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
-    cv2.putText(im, f"pt1:{pt1}", (50, 120), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (0, 255, 0), 1)
-    cv2.putText(im, f"pt2_a:{pt2_a}", (50, 150), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (0, 255, 0), 1)
-    cv2.putText(im, f"pt2_b:{pt2_b}", (50, 180), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (0, 255, 0), 1)
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     target_fps = 30
     target_frame_time = 1/target_fps
     ### Loading obstacle_map ###
     # Load as grayscale
-    img = cv2.imread('map_big.bmp', cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread('map_always_detect.bmp', cv2.IMREAD_GRAYSCALE)
     print(img.shape)  # e.g., (height, width)
     obstacle_map = img == 0
-    lidar_rps = 0.5
+    lidar_rps = 1/10
     #############################
-    max_x, max_y = 20, 20 #in meters
-    map_x_range = np.linspace(0, max_x, obstacle_map.shape[1])
-    map_y_range = np.linspace(0, max_y, obstacle_map.shape[0])
+    max_x_meters, max_y_meters = 20, 20 #in meters
+
+    pixels_to_a_meter_x = obstacle_map.shape[1]/max_x_meters
+    pixels_to_a_meter_y = obstacle_map.shape[0]/max_y_meters
+
+    norm_difference_ratios = (pixels_to_a_meter_x - pixels_to_a_meter_y)/(pixels_to_a_meter_x + pixels_to_a_meter_y)
+
+    assert norm_difference_ratios < 0.02
+    pixels_to_a_meter = (pixels_to_a_meter_x+pixels_to_a_meter_y)/2
+
+    map_x_range_meters = np.linspace(0, max_x_meters, obstacle_map.shape[1])
+    map_y_range_meters = np.linspace(0, max_y_meters, obstacle_map.shape[0])
     car = car_lib.Car([obstacle_map.shape[1]//2, obstacle_map.shape[0]//2],
-                      map_x_range,map_y_range, lidar_rps)
+                      map_x_range_meters, map_y_range_meters, lidar_rps, pixels_to_a_meter)
     running = True
     l_0 = logit(0.5)
     l_t = l_prev = np.full(obstacle_map.shape, l_0)
     dt = target_frame_time
     while running:
-        print(f"dt:{dt}, bearing:{np.round(car.lidar_bearing, 2)}")
         start_time = time.time()
         # 1. get measurement for bearing
-        car.update_relative_range_bearing(map_x_range, map_y_range)
+        car.update_relative_range_bearing(map_x_range_meters, map_y_range_meters)
 
         ran = car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF)
+        print(f"dt:{dt}, "
+              f"bearing:{np.round(car.lidar_bearing, 2)}, "
+              f"range:{np.round(ran, 2)}")
 
         # 2. get p(mi| yt)
         m_t = perception_utils.inverse_measurement_model(ran, car.lidar_bearing, car)
 
         # 3. update belief map
-        print(l_t)
+        #print(l_t)
         l_prev = np.copy(l_t)
         l_t = perception_utils.update_belief_map(m_t, l_prev, l_0)
         grid_frame = cv2.cvtColor((expit(l_t)*255).astype(np.uint8), cv2.COLOR_GRAY2BGR)
         #grid_frame += np.random.random(grid_frame.shape)
-        draw_perception_line(grid_frame, car.pos, ran, car.lidar_bearing, car.lidar_dphi)
+        perception_utils.draw_perception_line(grid_frame, car.pos_px, ran, car.lidar_bearing, car.lidar_dphi, car.lidar_dr, pixels_to_a_meter)
+        gt_map_draw = np.copy(img)
+        gt_map_draw = cv2.cvtColor((gt_map_draw).astype(np.uint8), cv2.COLOR_GRAY2BGR)
+        perception_utils.draw_perception_line(gt_map_draw, car.pos_px, ran, car.lidar_bearing, car.lidar_dphi, car.lidar_dr, pixels_to_a_meter)
+
         cv2.imshow("grid_frame", grid_frame)
+        cv2.imshow("gt_map", gt_map_draw)
         if cv2.waitKey(1) & 0xFF == ord('q'):  # Waits 1ms, breaks on 'q' key
             break
         car.update_state(dt) # for now, only rotates the lidar bearing

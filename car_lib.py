@@ -5,16 +5,21 @@ class Car():
 
     NOISE_OFF = 0
     NOISE_ON = 1
-    def __init__(self, starting_pos, map_x_range, map_y_range, lidar_rps):
-        self.pos = np.array(starting_pos)
+    def __init__(self, starting_pos, map_x_range, map_y_range, lidar_rps, pixels_to_a_meter):
+        self.pos_px = np.array(starting_pos)
         self.max_range = 10
         self.lidar_dr = 0.10
         self.lidar_dphi = 2*np.pi/100
         self.lidar_bearing = 0
         self.lidar_bearing_angular_speed = lidar_rps*2*np.pi
+        self.pixels_to_a_meter = pixels_to_a_meter
+
+        ground_truth_map_xx_meters, ground_truth_map_yy_meters = np.meshgrid(map_x_range, map_y_range)
+        self.ground_truth_map_xx_yy_meters = np.dstack([ground_truth_map_xx_meters, ground_truth_map_yy_meters])
 
         self.ground_truth_map_ran = self.ground_truth_map_bearing = None
         self.update_relative_range_bearing(map_x_range, map_y_range)
+        self.delta = None
 
 
     def update_state(self, dt):
@@ -25,11 +30,9 @@ class Car():
         Helper function to get the relative range and bearing meshgrids
         :return:
         """
-        ground_truth_map_XX, ground_truth_map_YY = np.meshgrid(map_x_range, map_y_range)
-        ground_truth_map_XX_YY = np.dstack([ground_truth_map_XX, ground_truth_map_YY])
-        delta = ground_truth_map_XX_YY - self.pos
-        ground_truth_map_ran = np.linalg.norm(delta, axis = 2)
-        ground_truth_map_bearing = np.atan2(delta[:,:,1], delta[:,:,0])
+        self.delta = self.ground_truth_map_xx_yy_meters - self.pos_px / self.pixels_to_a_meter
+        ground_truth_map_ran = np.linalg.norm(self.delta, axis = 2)
+        ground_truth_map_bearing = np.atan2(self.delta[:,:,1], self.delta[:,:,0])
 
         self.ground_truth_map_ran = ground_truth_map_ran
         self.ground_truth_map_bearing = ground_truth_map_bearing
@@ -60,7 +63,8 @@ class Car():
                                                             ground_truth_map,
                                                             mode=perception_utils.DETECTION_MODE)
 
-            if np.any(detections):
+            if np.any(detections) or np.sum(detections)>0:
+                print(f"detection @ r:{np.round(r, 2)}, bearing:{np.round(self.lidar_bearing, 2)}, ")
                 break
 
 

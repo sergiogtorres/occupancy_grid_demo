@@ -1,10 +1,66 @@
 import numpy as np
 import warnings
 from scipy.special import logit
+import cv2
 
 DETECTION_MODE = 0
 INVERSE_MEASUREMENT_MODE = 1
 
+def draw_perception_line(im, start, range, bearing, dphi, dr, pixels_to_a_meter):
+    """
+    TODO: adjust to detected range?
+    :param im:
+    :param start:
+    :param range:
+    :param bearing:
+    :param dphi:
+    :return:
+    """
+    range_in_pixels = range*pixels_to_a_meter
+    dr_in_pixels = dr*pixels_to_a_meter
+    pt1 = tuple(start)
+    delta_a = range_in_pixels*np.array([np.cos(bearing+dphi), np.sin(bearing+dphi)])
+    delta_b = range_in_pixels*np.array([np.cos(bearing-dphi), np.sin(bearing-dphi)])
+
+    delta_a_3 = dr_in_pixels*np.array([np.cos(bearing+dphi), np.sin(bearing+dphi)])
+    delta_b_3 = dr_in_pixels*np.array([np.cos(bearing-dphi), np.sin(bearing-dphi)])
+
+    x2_a, y2_a = (start + delta_a).astype(np.uint32)
+    x2_b, y2_b = (start + delta_b).astype(np.uint32)
+
+    x3_a, y3_a = (start + delta_a + delta_a_3).astype(np.uint32)
+    x3_b, y3_b = (start + delta_b + delta_b_3).astype(np.uint32)
+
+    pt2_a = x2_a, y2_a
+    pt2_b = x2_b, y2_b
+
+    pt3_a = x3_a, y3_a
+    pt3_b = x3_b, y3_b
+
+
+    #print(f"drawing line from {pt1} to {pt2_a} and {pt2_b}")
+    cv2.line(im, pt1, pt2_a, (0,255,0), 1)
+    cv2.line(im, pt1, pt2_b, (0,255,0), 1)
+
+    cv2.line(im, pt2_a, pt3_a, (0,0,255), 1)
+    cv2.line(im, pt2_b, pt3_b, (0,0,255), 1)
+
+    cv2.putText(im, f"bearing:{np.round(bearing, 2)}, "
+                    f"range:{np.round(range, 2)} m, {np.round(range_in_pixels, 0)} px"
+                    f"start:{start}", (50, 30), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 1)
+
+    cv2.putText(im, f"delta_a:{np.round(delta_a, 2)}, ",
+                (50, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+    cv2.putText(im, f"delta_b:{np.round(delta_b, 2)}, ",
+                (50, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+    cv2.putText(im, f"pt1:{pt1}", (50, 120), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 1)
+    cv2.putText(im, f"pt2_a:{pt2_a}", (50, 150), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 1)
+    cv2.putText(im, f"pt2_b:{pt2_b}", (50, 180), cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 1)
 def check_within_range_bearing(arr_range, arr_bearing,
                                current_range, current_bearing, dr, dphi,
                                ground_truth_map=None,
@@ -15,14 +71,15 @@ def check_within_range_bearing(arr_range, arr_bearing,
         checked ranges:  [0, current detection range+dr]
         checked bearings: [current bearing-dphi, current bearing+dphi]
 
+    This function takes in range in meters, since it works with the arr_range array.
     TODO: this function does two quite different things:
         1. simulate the LiDAR detection if mode=DETECTION_MODE
         2. helper function for inverse_measurement_mode
         --> separate these into two functions for clarity
 
     mask_ranges_and_bearings: contains True for any position within the ranges range_down_up, bearing_down_up
-    :param arr_range:
-    :param arr_bearing:
+    :param arr_range: relative range of each point in meters
+    :param arr_bearing: relative bearing of each point in radians
     :param range_down_up:
     :param bearing_down_up:
     :param ground_truth_map:
@@ -65,6 +122,8 @@ def check_within_range_bearing(arr_range, arr_bearing,
         or (mode == INVERSE_MEASUREMENT_MODE and ground_truth_map is not None):
         warnings.warn("Wrong combination of mode and ground_truth_map in check_within_range_bearing!")
 
+    if np.any(mask_obstacles):
+        print(f"obstacle detected!!")
     return mask_obstacles, mask_no_obstacles, mask_no_info
 def inverse_measurement_model(ran: float, bearing: float, car) -> float:
 
