@@ -2,6 +2,7 @@ import numpy as np
 import warnings
 from scipy.special import logit
 import cv2
+import utils
 
 DETECTION_MODE = 0
 INVERSE_MEASUREMENT_MODE = 1
@@ -67,7 +68,8 @@ def draw_perception_line(im, start, range, bearing, dphi, dr, pixels_to_a_meter)
 def check_within_range_bearing(arr_range, arr_bearing,
                                current_range, current_bearing, dr, dphi,
                                ground_truth_map=None,
-                               mode=DETECTION_MODE):
+                               mode=DETECTION_MODE,
+                               frame_to_debug = None):
     """
     if ground_truth_map is given, range_down_up, bearing_down_up are teh upper and lower ranges
     if ground_truth_map is None:
@@ -93,10 +95,11 @@ def check_within_range_bearing(arr_range, arr_bearing,
         mask_no_info: contains True if no info obtained for each point point
     """
     range_down_up = [current_range-dr/2, current_range+dr/2]
-    bearing_down_up = [current_bearing-dphi/2, current_bearing+dphi/2]
+    #bearing_down_up = [current_bearing-dphi/2, current_bearing+dphi/2]
 
-    mask_bearings = bearing_down_up[0] <= arr_bearing
-    mask_bearings *= arr_bearing <= bearing_down_up[1]
+    mask_bearings = utils.angles_in_range(arr_bearing, current_bearing, dphi/2)
+    #mask_bearings = bearing_down_up[0] <= arr_bearing
+    #mask_bearings *= arr_bearing <= bearing_down_up[1]
 
     mask_ranges = range_down_up[0] <= arr_range
     mask_ranges *= arr_range <= range_down_up[1]
@@ -125,8 +128,14 @@ def check_within_range_bearing(arr_range, arr_bearing,
         or (mode == INVERSE_MEASUREMENT_MODE and ground_truth_map is not None):
         warnings.warn("Wrong combination of mode and ground_truth_map in check_within_range_bearing!")
 
-    if np.any(mask_obstacles):
-        print(f"obstacle detected!!")
+    #if np.any(mask_obstacles):
+        #if mode == DETECTION_MODE:
+            #print(f"obstacle detected @ {np.where(mask_obstacles)}")
+    if frame_to_debug is not None:
+        frame_to_debug[mask_obstacles] = [0, 255, 0]
+        cv2.imshow("frame_to_debug", frame_to_debug)
+        cv2.waitKey(10)
+
     return mask_obstacles, mask_no_obstacles, mask_no_info
 def inverse_measurement_model(ran: float, bearing: float, car) -> float:
 

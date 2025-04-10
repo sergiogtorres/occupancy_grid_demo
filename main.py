@@ -3,6 +3,7 @@ import numpy.typing as npt
 import cv2
 from scipy.special import logit, expit
 import time
+import math
 
 import car_lib
 import perception_utils
@@ -15,10 +16,10 @@ if __name__ == '__main__':
     target_frame_time = 1/target_fps
     ### Loading obstacle_map ###
     # Load as grayscale
-    img = cv2.imread('map_always_detect.bmp', cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread('map_always_detect_square.bmp', cv2.IMREAD_GRAYSCALE)
     print(img.shape)  # e.g., (height, width)
-    obstacle_map = img == 0
-    lidar_rps = 1/10
+    obstacle_map = (img == 0)
+    lidar_rps = 1/100
     #############################
     max_x_meters, max_y_meters = 20, 20 #in meters
 
@@ -47,12 +48,18 @@ if __name__ == '__main__':
     l_0 = logit(0.5)
     l_t = l_prev = np.full(obstacle_map.shape, l_0)
     dt = target_frame_time
+    frame_to_debug = cv2.cvtColor((np.zeros(obstacle_map.shape)).astype(np.uint8), cv2.COLOR_GRAY2BGR)
+    past_turn = 0
+    whole_turns = 0
     while running:
         start_time = time.time()
         # 1. get measurement for bearing
         car.update_relative_range_bearing(map_x_range_meters, map_y_range_meters)
 
-        ran = car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF)
+        cv2.imshow("frame_to_debug", frame_to_debug)
+        cv2.imshow("obstacle_map", (obstacle_map*255).astype(np.uint8))
+        ran = car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF,
+                        frame_to_debug = frame_to_debug)
         print(f"dt:{dt}, "
               f"bearing:{np.round(car.lidar_bearing, 2)}, "
               f"range:{np.round(ran, 2)}")
@@ -82,6 +89,11 @@ if __name__ == '__main__':
         ground_truth_map_xx_yy_meters = car.ground_truth_map_xx_yy_meters
         delta = car.delta
 
+        whole_turns += (dt*lidar_rps)
+
+        if math.trunc(whole_turns - past_turn) >= 1:
+            past_turn += 1
+            frame_to_debug *= 0
         ###### after everything else is finished, calculate required sleep time ######
         dt = time.time() - start_time
         sleep_time = target_frame_time - dt

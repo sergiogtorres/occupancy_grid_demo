@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c301b9dc-90a3-4545-aa27-5766ad526ce9" name="Changes" comment="Fixed mismatches of meters and pixel units&#10; - Only major issues in draw_perception_line() and in Car() class in self.pos usage&#10; - Refactored meter/pixel units for clarity&#10; - Refactored functions out of main.py">
+    <list default="true" id="c301b9dc-90a3-4545-aa27-5766ad526ce9" name="Changes" comment="Fixing issue with angles:&#10; - new functions to handle angle wrapping in utils.py&#10; - updated check_within_range_bearing()">
+      <change afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/car_lib.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_lib.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
@@ -34,13 +35,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.main.executor": "Run",
-    "Python.perception_utils.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.perception_utils.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.main">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="occupancy_grid_demo" />
@@ -66,6 +67,9 @@
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -134,7 +138,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744286843788</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Fixed issue with coordinate handedness. Now:&#10; - Car.pos_px is the pixel coordinate in (x, y) format&#10; - Car.get_world_pos() gets the position in world coordinates&#10; - Car.ground_truth_map_xx_yy_meters has positive y upwards (new), positive x rightwards (no change), and has origin (0, 0) [m] at its center&#10; - changed definition of map_y_range_meters so y increases upwards&#10; - corrected angles with negative sign in draw_perception_line()">
+      <option name="closed" value="true" />
+      <created>1744289112678</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1744289112678</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -142,19 +154,20 @@
     <MESSAGE value="Work in progress&#10;- Car class almost finished&#10;- Inverse measurement function finished" />
     <MESSAGE value="Work in progress&#10;- main.py runs&#10;- added real time visualization of scanning ray&#10;    - TODO: ^^^ fix mismatch of pixel units vs meter units! in draw_perception_line() and elsewhere" />
     <MESSAGE value="Fixed mismatches of meters and pixel units&#10; - Only major issues in draw_perception_line() and in Car() class in self.pos usage&#10; - Refactored meter/pixel units for clarity&#10; - Refactored functions out of main.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed mismatches of meters and pixel units&#10; - Only major issues in draw_perception_line() and in Car() class in self.pos usage&#10; - Refactored meter/pixel units for clarity&#10; - Refactored functions out of main.py" />
+    <MESSAGE value="Fixed issue with coordinate handedness. Now:&#10; - Car.pos_px is the pixel coordinate in (x, y) format&#10; - Car.get_world_pos() gets the position in world coordinates&#10; - Car.ground_truth_map_xx_yy_meters has positive y upwards (new), positive x rightwards (no change), and has origin (0, 0) [m] at its center&#10; - changed definition of map_y_range_meters so y increases upwards&#10; - corrected angles with negative sign in draw_perception_line()" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue with coordinate handedness. Now:&#10; - Car.pos_px is the pixel coordinate in (x, y) format&#10; - Car.get_world_pos() gets the position in world coordinates&#10; - Car.ground_truth_map_xx_yy_meters has positive y upwards (new), positive x rightwards (no change), and has origin (0, 0) [m] at its center&#10; - changed definition of map_y_range_meters so y increases upwards&#10; - corrected angles with negative sign in draw_perception_line()" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>41</line>
+          <line>42</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>54</line>
+          <line>60</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>

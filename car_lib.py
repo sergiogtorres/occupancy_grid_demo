@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import perception_utils
+import utils
 class Car():
 
     NOISE_OFF = 0
@@ -29,8 +30,8 @@ class Car():
     def get_world_pos(self):
         return (self.pos_px - self.map_center_coords_px) * self.neg_y / self.pixels_to_a_meter
     def update_state(self, dt):
-        self.lidar_bearing += dt*self.lidar_bearing_angular_speed
-        self.lidar_bearing = self.lidar_bearing % (2*np.pi)
+
+        self.lidar_bearing = utils.wrap_to_pi(self.lidar_bearing + dt*self.lidar_bearing_angular_speed)
     def update_relative_range_bearing(self, map_x_range, map_y_range):
         """
         Helper function to get the relative range and bearing meshgrids
@@ -46,7 +47,7 @@ class Car():
 
 
 
-    def sense(self, ground_truth_map, noise = NOISE_OFF):
+    def sense(self, ground_truth_map, noise = NOISE_OFF, frame_to_debug = None):
         """
         Uses the ground truth car position and ground truth obstacle map to generate a measurement.
         TODO: include noisy measurements (introduce measurement into bearing -> measure range -> introduce noise to range.
@@ -68,7 +69,8 @@ class Car():
                 perception_utils.check_within_range_bearing(self.ground_truth_map_ran, self.ground_truth_map_bearing,
                                                             r, self.lidar_bearing, self.lidar_dr, self.lidar_bearing,
                                                             ground_truth_map,
-                                                            mode=perception_utils.DETECTION_MODE)
+                                                            mode=perception_utils.DETECTION_MODE,
+                                                            frame_to_debug = frame_to_debug)
 
             if np.any(detections) or np.sum(detections)>0:
                 print(f"detection @ r:{np.round(r, 2)}, bearing:{np.round(self.lidar_bearing, 2)}, ")
