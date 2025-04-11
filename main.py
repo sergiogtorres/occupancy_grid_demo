@@ -5,6 +5,7 @@ from scipy.special import logit, expit
 import time
 import math
 import utils
+from matplotlib import pyplot as plt
 
 import car_lib
 import perception_utils
@@ -57,9 +58,7 @@ if __name__ == '__main__':
         # 1. get measurement for bearing
         car.update_relative_range_bearing(map_x_range_meters, map_y_range_meters)
 
-        cv2.imshow("frame_to_debug", frame_to_debug)
-        cv2.imshow("obstacle_map", (obstacle_map*255).astype(np.uint8))
-        ran = car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF,
+        ran, one, two, three = car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF,
                         frame_to_debug = frame_to_debug)
         print(f"dt:{dt}, "
               f"bearing:{np.round(car.lidar_bearing, 2)}, "
@@ -81,8 +80,18 @@ if __name__ == '__main__':
 
         cv2.imshow("grid_frame", grid_frame)
         cv2.imshow("gt_map", gt_map_draw)
+        cv2.imshow("frame_to_debug", frame_to_debug)
+        cv2.imshow("obstacle_map", (obstacle_map*255).astype(np.uint8))
+
+
         if cv2.waitKey(1) & 0xFF == ord('q'):  # Waits 1ms, breaks on 'q' key
             break
+
+        # clear frame_to_debug
+        frame_to_debug[:,:,2] = 0 #for ranges
+        frame_to_debug[:,:,0] = 0 #for bearings
+        #frame_to_debug[:,:,1] = 0 #for obstacles
+
         car.update_state(dt) # for now, only rotates the lidar bearing
 
         ranges = car.ground_truth_map_ran
@@ -95,6 +104,8 @@ if __name__ == '__main__':
         if math.trunc(whole_turns - past_turn) >= 1:
             past_turn += 1
             frame_to_debug *= 0
+
+
         ###### after everything else is finished, calculate required sleep time ######
         dt = time.time() - start_time
         sleep_time = target_frame_time - dt

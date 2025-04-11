@@ -2,6 +2,7 @@ import numpy as np
 import math
 import perception_utils
 import utils
+import cv2
 class Car():
 
     NOISE_OFF = 0
@@ -58,30 +59,27 @@ class Car():
         :param ground_truth_map: the ground truth obstacle map
         :return: ran, the measured range r(φ).
         """
+        mask_bearings = utils.angles_in_range(self.ground_truth_map_bearing, self.lidar_bearing, self.lidar_dphi / 2)
 
-        # convert the entire ground_truth_map coordinates into relative range and bearing
-        # 1. loop through the ray to check if obstacle
-        for r in np.linspace(0, self.max_range, num = math.ceil(self.max_range/self.lidar_dr)):
-            # TODO: before looping, filter the arrays so I only consider the relevant bearings -> index transformations
-            # TODO: vectorize this loop. Just check for the smallest r in the ranges array for the considered bearings
-            #range_down_up = [r-self.lidar_dr, r+self.lidar_dr]
-            #bearing_down_up = [self.lidar_bearing-self.lidar_dphi, self.lidar_bearing+self.lidar_dphi]
-            detections, _, _ = \
-                perception_utils.check_within_range_bearing(self.ground_truth_map_ran, self.ground_truth_map_bearing,
-                                                            r, self.lidar_bearing, self.lidar_dr, self.lidar_dphi,
-                                                            ground_truth_map,
-                                                            mode=perception_utils.DETECTION_MODE,
-                                                            frame_to_debug = frame_to_debug)
+        r = np.min(self.ground_truth_map_ran[ground_truth_map & mask_bearings])
+        r = min(r, self.max_range)
 
-            if np.any(detections) or np.sum(detections)>0:
-                print(f"detection @ r:{np.round(r, 2)}, bearing:{np.round(self.lidar_bearing, 2)}, ")
-                break
-
-        if frame_to_debug is not None:
-            frame_to_debug[:,:,2] = 0
-            frame_to_debug[:,:,0] = 0
-
-        # 1.a if obstacle, stop, and we have the range
+        print(0)
+        #vvvv debug vvvv
+        debug_r_lower = r - self.lidar_dr
+        debug_r_upper = r + self.lidar_dr
+        debug_ranges_mask = (self.ground_truth_map_ran >= debug_r_lower) & (self.ground_truth_map_ran <= debug_r_upper)
 
 
-        return r
+        frame_to_debug[debug_ranges_mask & mask_bearings] += np.array([0, 255, 0]).astype(np.uint8) # plotting obstacles
+        #frame_to_debug += (np.random.random(frame_to_debug.shape)*255).astype(np.uint8)
+        #frame_to_debug[mask_bearings] += np.array([255, 0, 0]).astype(np.uint8)
+
+
+
+        #if frame_to_debug is not None:
+        #    frame_to_debug[:,:,2] = 0
+        #    frame_to_debug[:,:,0] = 0
+
+
+        return r, self.ground_truth_map_ran[mask_bearings], ground_truth_map[mask_bearings], mask_bearings
