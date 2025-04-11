@@ -25,10 +25,10 @@ if __name__ == '__main__':
     target_frame_time = 1/target_fps
     ### Loading obstacle_map ###
     # Load as grayscale
-    img = cv2.imread('map_always_detect_square.bmp', cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread('map_big_2.bmp', cv2.IMREAD_GRAYSCALE)
     print(img.shape)  # e.g., (height, width)
     obstacle_map = (img == 0)
-    lidar_rps = 1/100
+    lidar_rps = 0.25
     #############################
     max_x_meters, max_y_meters = 20, 20 #in meters
 

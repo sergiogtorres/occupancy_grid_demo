@@ -44,7 +44,7 @@ class Car():
         :return:
         """
         pos_meters = self.get_world_pos()
-        print(f"pos_meters:{pos_meters}")
+        #print(f"pos_meters:{pos_meters}")
         self.delta = self.ground_truth_map_xx_yy_meters - pos_meters# / self.pixels_to_a_meter
         ground_truth_map_ran = np.linalg.norm(self.delta, axis = 2)
         ground_truth_map_bearing = np.atan2(self.delta[:,:,1], self.delta[:,:,0])
@@ -66,11 +66,14 @@ class Car():
         :return: ran, the measured range r(φ).
         """
         mask_bearings = utils.angles_in_range(self.ground_truth_map_bearing, self.lidar_bearing, self.lidar_dphi / 2)
-
-        r = np.min(self.ground_truth_map_ran[ground_truth_map & mask_bearings])
+        list_of_r = self.ground_truth_map_ran[ground_truth_map & mask_bearings]
+        if len(list_of_r) > 0:
+            r = np.min(list_of_r)
+        else:
+            r = self.max_range
         r = min(r, self.max_range)
 
-        print(0)
+        #print(0)
         #vvvv debug vvvv
         debug_r_lower = r - self.lidar_dr
         debug_r_upper = r + self.lidar_dr

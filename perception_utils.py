@@ -40,6 +40,8 @@ def draw_perception_line(im, start, range, bearing, dphi, dr, pixels_to_a_meter)
 
     pt3_a = x3_a, y3_a
     pt3_b = x3_b, y3_b
+    #print(f"delta_a_3:{delta_a_3}, delta_b_3:{delta_b_3}")
+    #print(pt1, pt2_a, pt2_b, pt3_a, pt3_b)
 
 
     #print(f"drawing line from {pt1} to {pt2_a} and {pt2_b}")
