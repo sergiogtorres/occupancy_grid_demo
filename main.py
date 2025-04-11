@@ -25,7 +25,7 @@ if __name__ == '__main__':
     target_frame_time = 1/target_fps
     ### Loading obstacle_map ###
     # Load as grayscale
-    img = cv2.imread('map_big_2.bmp', cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread('map_complex.bmp', cv2.IMREAD_GRAYSCALE)
     print(img.shape)  # e.g., (height, width)
     obstacle_map = (img == 0)
     lidar_rps = 0.25
@@ -87,11 +87,11 @@ if __name__ == '__main__':
         # 1. get measurement for bearing
         car.update_relative_range_bearing(map_x_range_meters, map_y_range_meters)
 
-        ran, one, two, three = car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF,
+        ran= car.sense(ground_truth_map = obstacle_map, noise = car.NOISE_OFF,
                         frame_to_debug = frame_to_debug)
-        print(f"dt:{dt}, "
-              f"bearing:{np.round(car.lidar_bearing, 2)}, "
-              f"range:{np.round(ran, 2)}")
+        #print(f"dt:{dt}, "
+        #      f"bearing:{np.round(car.lidar_bearing, 2)}, "
+        #      f"range:{np.round(ran, 2)}")
 
         # 2. get p(mi| yt)
         m_t = perception_utils.inverse_measurement_model(ran, car.lidar_bearing, car)
@@ -111,17 +111,17 @@ if __name__ == '__main__':
 
         #######
 
-        ranges = car.ground_truth_map_ran
-        bearings = car.ground_truth_map_bearing
-        ground_truth_map_xx_yy_meters = car.ground_truth_map_xx_yy_meters
-        delta = car.delta
+        #ranges = car.ground_truth_map_ran
+        #bearings = car.ground_truth_map_bearing
+        #ground_truth_map_xx_yy_meters = car.ground_truth_map_xx_yy_meters
+        #delta = car.delta
 
         #########
         cv2.imshow("grid_frame", grid_frame)
         cv2.imshow("gt_map", gt_map_draw)
         cv2.imshow("frame_to_debug", frame_to_debug)
-        cv2.imshow("obstacle_map", (obstacle_map*255).astype(np.uint8))
-        cv2.imshow("deltas map", ((ranges/np.max(ranges))*255).astype(np.uint8))
+        #cv2.imshow("obstacle_map", (obstacle_map*255).astype(np.uint8))
+        #cv2.imshow("deltas map", ((ranges/np.max(ranges))*255).astype(np.uint8))
 
         key = cv2.waitKey(1) & 0xFF # Wait 1ms
         if key == ord('q'): # breaks on 'q' key

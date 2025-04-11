@@ -69,7 +69,6 @@ def draw_perception_line(im, start, range, bearing, dphi, dr, pixels_to_a_meter)
                 0.5, (0, 255, 0), 1)
 def check_within_range_bearing(arr_range, arr_bearing,
                                current_range, current_bearing, dr, dphi,
-                               ground_truth_map=None,
                                frame_to_debug = None):
     """
     if ground_truth_map is given, range_down_up, bearing_down_up are teh upper and lower ranges
@@ -139,8 +138,7 @@ def inverse_measurement_model(ran: float, bearing: float, car) -> float:
 
     mask_obstacles, mask_no_obstacles, mask_no_info \
         = check_within_range_bearing(car.ground_truth_map_ran, car.ground_truth_map_bearing,
-                                     ran, bearing, car.lidar_dr, car.lidar_dphi,
-                                     ground_truth_map=None,)
+                                     ran, bearing, car.lidar_dr, car.lidar_dphi,)
 
     m_t = mask_obstacles*1 + mask_no_obstacles*0 + mask_no_info*0.5
     return m_t

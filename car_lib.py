@@ -92,7 +92,7 @@ class Car():
 
 
 
-        return r, self.ground_truth_map_ran[mask_bearings], ground_truth_map[mask_bearings], mask_bearings
+        return r#, self.ground_truth_map_ran[mask_bearings], ground_truth_map[mask_bearings], mask_bearings
 
     def move_up(self):
         self.velocity[1] = -self.current_speed
