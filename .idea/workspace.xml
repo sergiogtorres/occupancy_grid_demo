@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c301b9dc-90a3-4545-aa27-5766ad526ce9" name="Changes" comment="Fixing issue with angles:&#10; - new functions to handle angle wrapping in utils.py&#10; - updated check_within_range_bearing()">
-      <change afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+    <list default="true" id="c301b9dc-90a3-4545-aa27-5766ad526ce9" name="Changes" comment="Fixing issue with angles:&#10; - new functions to handle angle wrapping in utils.py&#10; - updated check_within_range_bearing()&#10; - added frame_to_debug, which should plot points detected by car.sense()&#10; - TODO: debug car.sense() and related functions/variables">
+      <change afterPath="$PROJECT_DIR$/notes.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/car_lib.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_lib.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
@@ -146,7 +146,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744289112678</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Fixing issue with angles:&#10; - new functions to handle angle wrapping in utils.py&#10; - updated check_within_range_bearing()&#10; - added frame_to_debug, which should plot points detected by car.sense()&#10; - TODO: debug car.sense() and related functions/variables">
+      <option name="closed" value="true" />
+      <created>1744317584982</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1744317584982</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -155,19 +163,20 @@
     <MESSAGE value="Work in progress&#10;- main.py runs&#10;- added real time visualization of scanning ray&#10;    - TODO: ^^^ fix mismatch of pixel units vs meter units! in draw_perception_line() and elsewhere" />
     <MESSAGE value="Fixed mismatches of meters and pixel units&#10; - Only major issues in draw_perception_line() and in Car() class in self.pos usage&#10; - Refactored meter/pixel units for clarity&#10; - Refactored functions out of main.py" />
     <MESSAGE value="Fixed issue with coordinate handedness. Now:&#10; - Car.pos_px is the pixel coordinate in (x, y) format&#10; - Car.get_world_pos() gets the position in world coordinates&#10; - Car.ground_truth_map_xx_yy_meters has positive y upwards (new), positive x rightwards (no change), and has origin (0, 0) [m] at its center&#10; - changed definition of map_y_range_meters so y increases upwards&#10; - corrected angles with negative sign in draw_perception_line()" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue with coordinate handedness. Now:&#10; - Car.pos_px is the pixel coordinate in (x, y) format&#10; - Car.get_world_pos() gets the position in world coordinates&#10; - Car.ground_truth_map_xx_yy_meters has positive y upwards (new), positive x rightwards (no change), and has origin (0, 0) [m] at its center&#10; - changed definition of map_y_range_meters so y increases upwards&#10; - corrected angles with negative sign in draw_perception_line()" />
+    <MESSAGE value="Fixing issue with angles:&#10; - new functions to handle angle wrapping in utils.py&#10; - updated check_within_range_bearing()&#10; - added frame_to_debug, which should plot points detected by car.sense()&#10; - TODO: debug car.sense() and related functions/variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixing issue with angles:&#10; - new functions to handle angle wrapping in utils.py&#10; - updated check_within_range_bearing()&#10; - added frame_to_debug, which should plot points detected by car.sense()&#10; - TODO: debug car.sense() and related functions/variables" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>42</line>
+          <line>43</line>
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>60</line>
+          <line>61</line>
           <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>

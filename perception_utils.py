@@ -82,6 +82,7 @@ def check_within_range_bearing(arr_range, arr_bearing,
         2. helper function for inverse_measurement_mode
         --> separate these into two functions for clarity
 
+
     mask_ranges_and_bearings: contains True for any position within the ranges range_down_up, bearing_down_up
     :param arr_range: relative range of each point in meters
     :param arr_bearing: relative bearing of each point in radians
@@ -98,9 +99,11 @@ def check_within_range_bearing(arr_range, arr_bearing,
     #bearing_down_up = [current_bearing-dphi/2, current_bearing+dphi/2]
 
     mask_bearings = utils.angles_in_range(arr_bearing, current_bearing, dphi/2)
+    #print(f"calling angles_in_range(arr, {np.round(current_bearing, 2)}, {np.round(dphi/2, 2)}")
     #mask_bearings = bearing_down_up[0] <= arr_bearing
     #mask_bearings *= arr_bearing <= bearing_down_up[1]
 
+    # TODO: mask_ranges seems to have some holes (small but annoying). Why? Fix.
     mask_ranges = range_down_up[0] <= arr_range
     mask_ranges *= arr_range <= range_down_up[1]
     mask_ranges_and_bearings = mask_ranges * mask_bearings
@@ -132,7 +135,9 @@ def check_within_range_bearing(arr_range, arr_bearing,
         #if mode == DETECTION_MODE:
             #print(f"obstacle detected @ {np.where(mask_obstacles)}")
     if frame_to_debug is not None:
-        frame_to_debug[mask_obstacles] = [0, 255, 0]
+        frame_to_debug[mask_ranges] += np.array([0, 0, 255]).astype(np.uint8)
+        frame_to_debug[mask_bearings] += np.array([255, 0, 0]).astype(np.uint8)
+        frame_to_debug[mask_obstacles] += np.array([0, 255, 0]).astype(np.uint8)
         cv2.imshow("frame_to_debug", frame_to_debug)
         cv2.waitKey(10)
 

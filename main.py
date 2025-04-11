@@ -4,6 +4,7 @@ import cv2
 from scipy.special import logit, expit
 import time
 import math
+import utils
 
 import car_lib
 import perception_utils

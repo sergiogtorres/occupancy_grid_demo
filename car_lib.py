@@ -52,7 +52,7 @@ class Car():
         Uses the ground truth car position and ground truth obstacle map to generate a measurement.
         TODO: include noisy measurements (introduce measurement into bearing -> measure range -> introduce noise to range.
 
-        Could actually obtain the measurement mi directly as the boolean array detections, but for realism, this
+        Could actually obtain the measurement "mi" directly as the boolean array detections, but for realism, this
         function only returns the range where detections contains at least one detection is present
         :param bearing: desired angle to measure at
         :param ground_truth_map: the ground truth obstacle map
@@ -63,11 +63,12 @@ class Car():
         # 1. loop through the ray to check if obstacle
         for r in np.linspace(0, self.max_range, num = math.ceil(self.max_range/self.lidar_dr)):
             # TODO: before looping, filter the arrays so I only consider the relevant bearings -> index transformations
+            # TODO: vectorize this loop. Just check for the smallest r in the ranges array for the considered bearings
             #range_down_up = [r-self.lidar_dr, r+self.lidar_dr]
             #bearing_down_up = [self.lidar_bearing-self.lidar_dphi, self.lidar_bearing+self.lidar_dphi]
             detections, _, _ = \
                 perception_utils.check_within_range_bearing(self.ground_truth_map_ran, self.ground_truth_map_bearing,
-                                                            r, self.lidar_bearing, self.lidar_dr, self.lidar_bearing,
+                                                            r, self.lidar_bearing, self.lidar_dr, self.lidar_dphi,
                                                             ground_truth_map,
                                                             mode=perception_utils.DETECTION_MODE,
                                                             frame_to_debug = frame_to_debug)
@@ -76,7 +77,9 @@ class Car():
                 print(f"detection @ r:{np.round(r, 2)}, bearing:{np.round(self.lidar_bearing, 2)}, ")
                 break
 
-
+        if frame_to_debug is not None:
+            frame_to_debug[:,:,2] = 0
+            frame_to_debug[:,:,0] = 0
 
         # 1.a if obstacle, stop, and we have the range
 
