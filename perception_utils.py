@@ -138,20 +138,22 @@ def check_within_range_bearing(arr_range, arr_bearing,
         frame_to_debug[mask_ranges] += np.array([0, 0, 255]).astype(np.uint8)
         frame_to_debug[mask_bearings] += np.array([255, 0, 0]).astype(np.uint8)
         frame_to_debug[mask_obstacles] += np.array([0, 255, 0]).astype(np.uint8)
-        cv2.imshow("frame_to_debug", frame_to_debug)
-        cv2.waitKey(10)
+        #cv2.imshow("frame_to_debug", frame_to_debug)
+        #cv2.waitKey(1)
 
     return mask_obstacles, mask_no_obstacles, mask_no_info
 def inverse_measurement_model(ran: float, bearing: float, car) -> float:
 
     """
     returns p(m^i|y_t)
-    TODO: implement with Bresenham's line algorithm for Ray Tracing
     :param ran:
     :param bearing:
     :param car:
     :return:
     """
+    # TODO: implement with Bresenham's line algorithm for Ray Tracing
+    # TODO: refine implementation. All possible points are assigned 1... do a gradient instead ?
+
     mask_obstacles, mask_no_obstacles, mask_no_info \
         = check_within_range_bearing(car.ground_truth_map_ran, car.ground_truth_map_bearing,
                                      ran, bearing, car.lidar_dr, car.lidar_dphi,
