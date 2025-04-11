@@ -6,11 +6,18 @@ import time
 import math
 import utils
 from matplotlib import pyplot as plt
+import pygame
 
 import car_lib
 import perception_utils
 
 # TODO: check all instances of use of position -> x, y correct order? cv2 is x, y!
+
+# import pygame. For now, only used to get keypresses
+pygame.init()
+
+pygame.display.set_mode((100, 100))  # Small dummy window, can be hidden later
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -54,7 +61,29 @@ if __name__ == '__main__':
     past_turn = 0
     whole_turns = 0
     while running:
+
+
+
         start_time = time.time()
+
+
+        #pygame input from dummy window
+        # Handle input
+        pygame.event.pump()  # Updates key state
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            car.move_up()
+        if keys[pygame.K_s]:
+            car.move_down()
+        if keys[pygame.K_a]:
+            car.move_left()
+        if keys[pygame.K_d]:
+            car.move_right()
+
+        car.speed_modifier(keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT])
+
+        ########
+
         # 1. get measurement for bearing
         car.update_relative_range_bearing(map_x_range_meters, map_y_range_meters)
 
@@ -73,19 +102,39 @@ if __name__ == '__main__':
         l_t = perception_utils.update_belief_map(m_t, l_prev, l_0)
         grid_frame = cv2.cvtColor((expit(l_t)*255).astype(np.uint8), cv2.COLOR_GRAY2BGR)
         #grid_frame += np.random.random(grid_frame.shape)
-        perception_utils.draw_perception_line(grid_frame, car.pos_px, ran, car.lidar_bearing, car.lidar_dphi, car.lidar_dr, pixels_to_a_meter)
+        perception_utils.draw_perception_line(grid_frame, (car.pos_px).astype(int), ran, car.lidar_bearing, car.lidar_dphi, car.lidar_dr, pixels_to_a_meter)
         gt_map_draw = np.copy(img)
         gt_map_draw = cv2.cvtColor((gt_map_draw).astype(np.uint8), cv2.COLOR_GRAY2BGR)
-        perception_utils.draw_perception_line(gt_map_draw, car.pos_px, ran, car.lidar_bearing, car.lidar_dphi, car.lidar_dr, pixels_to_a_meter)
+        perception_utils.draw_perception_line(gt_map_draw, (car.pos_px).astype(int), ran, car.lidar_bearing, car.lidar_dphi, car.lidar_dr, pixels_to_a_meter)
 
+
+
+        #######
+
+        ranges = car.ground_truth_map_ran
+        bearings = car.ground_truth_map_bearing
+        ground_truth_map_xx_yy_meters = car.ground_truth_map_xx_yy_meters
+        delta = car.delta
+
+        #########
         cv2.imshow("grid_frame", grid_frame)
         cv2.imshow("gt_map", gt_map_draw)
         cv2.imshow("frame_to_debug", frame_to_debug)
         cv2.imshow("obstacle_map", (obstacle_map*255).astype(np.uint8))
+        cv2.imshow("deltas map", ((ranges/np.max(ranges))*255).astype(np.uint8))
 
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # Waits 1ms, breaks on 'q' key
+        key = cv2.waitKey(1) & 0xFF # Wait 1ms
+        if key == ord('q'): # breaks on 'q' key
             break
+        #elif key == ord('w'):
+        #    car.move_up()
+        #elif key == ord('s'):
+        #    car.move_down()
+        #elif key == ord('a'):
+        #    car.move_left()
+        #elif key == ord('d'):
+        #    car.move_right()
+
 
         # clear frame_to_debug
         frame_to_debug[:,:,2] = 0 #for ranges
@@ -94,10 +143,6 @@ if __name__ == '__main__':
 
         car.update_state(dt) # for now, only rotates the lidar bearing
 
-        ranges = car.ground_truth_map_ran
-        bearings = car.ground_truth_map_bearing
-        ground_truth_map_xx_yy_meters = car.ground_truth_map_xx_yy_meters
-        delta = car.delta
 
         whole_turns += (dt*lidar_rps)
 
